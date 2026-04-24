@@ -30,10 +30,15 @@ import type { Keyword, KeywordMatchType } from '../../../types';
 
 const { Title, Text } = Typography;
 
+const C_PRIMARY  = '#1677ff';
+const C_LIGHT    = '#4096ff';
+const C_LIGHTER  = '#69b1ff';
+const C_BG       = '#f0f5ff';
+
 const MATCH_TYPE_COLOR: Record<KeywordMatchType, string> = {
-  exact: 'red',
-  phrase: 'orange',
-  broad: 'blue',
+  exact: 'blue',
+  phrase: 'geekblue',
+  broad: 'cyan',
 };
 
 const MATCH_TYPE_LABEL: Record<KeywordMatchType, string> = {
@@ -119,7 +124,7 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
             percent={v}
             showInfo={false}
             size="small"
-            strokeColor={v >= 22 ? '#52c41a' : v >= 18 ? '#faad14' : '#ff4d4f'}
+            strokeColor={C_PRIMARY}
             style={{ margin: 0 }}
           />
         </div>
@@ -131,9 +136,7 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
       key: 'acos',
       sorter: (a, b) => a.acos - b.acos,
       render: (v: number) => (
-        <Tag color={v <= 20 ? 'success' : v <= 25 ? 'warning' : 'error'}>
-          {v.toFixed(1)}%
-        </Tag>
+        <Tag color="blue">{v.toFixed(1)}%</Tag>
       ),
       align: 'center',
     },
@@ -143,7 +146,7 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
       key: 'spend',
       sorter: (a, b) => a.spend - b.spend,
       render: (v: number) => (
-        <Text style={{ color: '#ff4d4f' }}>${v.toLocaleString()}</Text>
+        <Text style={{ color: C_LIGHTER }}>${v.toLocaleString()}</Text>
       ),
       align: 'right',
     },
@@ -153,7 +156,7 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
       key: 'revenue',
       sorter: (a, b) => a.revenue - b.revenue,
       render: (v: number) => (
-        <Text strong style={{ color: '#52c41a' }}>
+        <Text strong style={{ color: C_PRIMARY }}>
           ${v.toLocaleString()}
         </Text>
       ),
@@ -173,53 +176,43 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
       {/* 汇总 */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
-          <Card size="small" bordered={false} style={{ background: '#fff1f0', borderRadius: 8 }}>
+          <Card size="small" bordered={false} style={{ background: C_BG, borderRadius: 8 }}>
             <Statistic
               title={<Text style={{ fontSize: 12 }}>广告总花费</Text>}
               value={`$${totalSpend.toLocaleString()}`}
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#ff4d4f', fontSize: 20 }}
+              valueStyle={{ color: C_PRIMARY, fontSize: 20 }}
             />
           </Card>
         </Col>
         <Col span={6}>
-          <Card size="small" bordered={false} style={{ background: '#f6ffed', borderRadius: 8 }}>
+          <Card size="small" bordered={false} style={{ background: C_BG, borderRadius: 8 }}>
             <Statistic
               title={<Text style={{ fontSize: 12 }}>广告总收入</Text>}
               value={`$${totalRevenue.toLocaleString()}`}
               prefix={<RiseOutlined />}
-              valueStyle={{ color: '#52c41a', fontSize: 20 }}
+              valueStyle={{ color: C_PRIMARY, fontSize: 20 }}
             />
           </Card>
         </Col>
         <Col span={6}>
-          <Card size="small" bordered={false} style={{ background: '#f0f9ff', borderRadius: 8 }}>
+          <Card size="small" bordered={false} style={{ background: C_BG, borderRadius: 8 }}>
             <Statistic
               title={<Text style={{ fontSize: 12 }}>广告总出单</Text>}
               value={totalOrders.toLocaleString()}
               prefix={<ThunderboltOutlined />}
               suffix="单"
-              valueStyle={{ color: '#1677ff', fontSize: 20 }}
+              valueStyle={{ color: C_PRIMARY, fontSize: 20 }}
             />
           </Card>
         </Col>
         <Col span={6}>
-          <Card
-            size="small"
-            bordered={false}
-            style={{
-              background: avgAcos <= 20 ? '#f6ffed' : avgAcos <= 25 ? '#fff7e6' : '#fff1f0',
-              borderRadius: 8,
-            }}
-          >
+          <Card size="small" bordered={false} style={{ background: C_BG, borderRadius: 8 }}>
             <Statistic
               title={<Text style={{ fontSize: 12 }}>平均 ACOS</Text>}
               value={avgAcos.toFixed(1)}
               suffix="%"
-              valueStyle={{
-                color: avgAcos <= 20 ? '#52c41a' : avgAcos <= 25 ? '#faad14' : '#ff4d4f',
-                fontSize: 20,
-              }}
+              valueStyle={{ color: C_LIGHT, fontSize: 20 }}
             />
           </Card>
         </Col>

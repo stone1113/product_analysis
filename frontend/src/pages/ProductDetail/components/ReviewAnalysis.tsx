@@ -16,8 +16,8 @@ import {
 import {
   UserOutlined,
   LikeOutlined,
-  CheckCircleOutlined,
   SearchOutlined,
+  StarFilled,
 } from '@ant-design/icons';
 import {
   ResponsiveContainer,
@@ -36,13 +36,10 @@ interface Props {
   productId: string;
 }
 
-const RATING_COLORS = ['#ff4d4f', '#ff7a45', '#ffa940', '#a0d911', '#52c41a'];
-
-const SENTIMENT_COLOR: Record<string, string> = {
-  positive: '#52c41a',
-  negative: '#ff4d4f',
-  neutral: '#8c8c8c',
-};
+// 蓝色梯度：1星最浅 → 5星最深
+const RATING_COLORS = ['#bae0ff', '#91caff', '#69b1ff', '#4096ff', '#1677ff'];
+const C_PRIMARY = '#1677ff';
+const C_BG      = '#f0f5ff';
 
 export default function ReviewAnalysis({ analysis, productId }: Props) {
   const navigate = useNavigate();
@@ -65,11 +62,16 @@ export default function ReviewAnalysis({ analysis, productId }: Props) {
           >
             {/* 大评分展示 */}
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <Text style={{ fontSize: 60, fontWeight: 700, color: '#ff7a00', lineHeight: 1 }}>
+              <Text style={{ fontSize: 60, fontWeight: 700, color: C_PRIMARY, lineHeight: 1 }}>
                 {analysis.averageRating.toFixed(1)}
               </Text>
               <div style={{ marginTop: 8 }}>
-                <Rate disabled allowHalf value={analysis.averageRating} />
+                <Rate
+                  disabled
+                  allowHalf
+                  value={analysis.averageRating}
+                  character={<StarFilled style={{ color: C_PRIMARY }} />}
+                />
               </div>
               <Text type="secondary" style={{ fontSize: 13 }}>
                 共 {analysis.totalReviews.toLocaleString()} 条评论
@@ -118,7 +120,7 @@ export default function ReviewAnalysis({ analysis, productId }: Props) {
                   innerRadius={50}
                   outerRadius={80}
                   dataKey="value"
-                  label={({ name, percentage }) => `${name} ${percentage}%`}
+                  label={false}
                   labelLine={false}
                 >
                   {pieData.map((_, idx) => (
@@ -129,10 +131,12 @@ export default function ReviewAnalysis({ analysis, productId }: Props) {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number, name: string) => [
-                    `${value.toLocaleString()} 条`,
-                    name,
-                  ]}
+                  formatter={(value: number, name: string) => {
+                    const item = analysis.ratingDistribution.find(
+                      (d) => `${d.stars}星` === name,
+                    );
+                    return [`${value.toLocaleString()} 条（${item?.percentage ?? 0}%）`, name];
+                  }}
                 />
                 <Legend />
               </PieChart>
@@ -144,23 +148,15 @@ export default function ReviewAnalysis({ analysis, productId }: Props) {
             <Col span={12}>
               <Card
                 size="small"
-                title={
-                  <Text style={{ color: '#52c41a', fontWeight: 600 }}>
-                    ✓ 好评关键词
-                  </Text>
-                }
+                title={<Text style={{ color: C_PRIMARY, fontWeight: 600 }}>好评关键词</Text>}
                 bordered={false}
-                style={{ background: '#f6ffed' }}
+                style={{ background: C_BG }}
               >
                 <Space size={[6, 6]} wrap>
                   {analysis.positiveTags.map((tag) => (
-                    <Tag
-                      key={tag.text}
-                      color="success"
-                      style={{ margin: 0, fontSize: 12 }}
-                    >
+                    <Tag key={tag.text} color="blue" style={{ margin: 0, fontSize: 12 }}>
                       {tag.text}
-                      <Text style={{ color: '#52c41a', fontSize: 11, marginLeft: 4 }}>
+                      <Text style={{ color: C_PRIMARY, fontSize: 11, marginLeft: 4 }}>
                         {tag.count}
                       </Text>
                     </Tag>
@@ -171,23 +167,15 @@ export default function ReviewAnalysis({ analysis, productId }: Props) {
             <Col span={12}>
               <Card
                 size="small"
-                title={
-                  <Text style={{ color: '#ff4d4f', fontWeight: 600 }}>
-                    ✗ 差评关键词
-                  </Text>
-                }
+                title={<Text style={{ color: C_PRIMARY, fontWeight: 600 }}>差评关键词</Text>}
                 bordered={false}
-                style={{ background: '#fff1f0' }}
+                style={{ background: C_BG }}
               >
                 <Space size={[6, 6]} wrap>
                   {analysis.negativeTags.map((tag) => (
-                    <Tag
-                      key={tag.text}
-                      color="error"
-                      style={{ margin: 0, fontSize: 12 }}
-                    >
+                    <Tag key={tag.text} color="geekblue" style={{ margin: 0, fontSize: 12 }}>
                       {tag.text}
-                      <Text style={{ color: '#ff4d4f', fontSize: 11, marginLeft: 4 }}>
+                      <Text style={{ color: '#2f54eb', fontSize: 11, marginLeft: 4 }}>
                         {tag.count}
                       </Text>
                     </Tag>
@@ -231,32 +219,19 @@ export default function ReviewAnalysis({ analysis, productId }: Props) {
                   <Text strong style={{ fontSize: 13 }}>
                     {review.author}
                   </Text>
-                  <Rate disabled value={review.rating} style={{ fontSize: 12 }} />
-                  <Tag
-                    color={
-                      review.sentiment === 'positive'
-                        ? 'success'
-                        : review.sentiment === 'negative'
-                        ? 'error'
-                        : 'default'
-                    }
-                    style={{ fontSize: 11 }}
-                  >
+                  <Rate
+                    disabled
+                    value={review.rating}
+                    style={{ fontSize: 12 }}
+                    character={<StarFilled style={{ color: C_PRIMARY }} />}
+                  />
+                  <Tag color="blue" style={{ fontSize: 11 }}>
                     {review.sentiment === 'positive'
                       ? '好评'
                       : review.sentiment === 'negative'
                       ? '差评'
                       : '中性'}
                   </Tag>
-                  {review.verified && (
-                    <Tag
-                      icon={<CheckCircleOutlined />}
-                      color="blue"
-                      style={{ fontSize: 11 }}
-                    >
-                      已验证购买
-                    </Tag>
-                  )}
                   <Text type="secondary" style={{ fontSize: 11 }}>
                     {review.date}
                   </Text>

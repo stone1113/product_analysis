@@ -95,8 +95,28 @@ export interface Product {
 // ────────────────────────────────────────────────
 // 销量数据点
 // ────────────────────────────────────────────────
+export type SalesSource = 'amazon' | 'independent';
+export type SalesRegion = 'us' | 'europe' | 'japan' | 'germany' | 'uk' | 'southeast_asia' | 'other';
+
+export const SALES_SOURCE_LABEL: Record<SalesSource, string> = {
+  amazon: 'Amazon',
+  independent: '独立站',
+};
+
+export const SALES_REGION_LABEL: Record<SalesRegion, string> = {
+  us: '美国',
+  europe: '欧洲',
+  japan: '日本',
+  germany: '德国',
+  uk: '英国',
+  southeast_asia: '东南亚',
+  other: '其他',
+};
+
 export interface SalesDataPoint {
   month: string;
+  source: SalesSource;
+  region: SalesRegion;
   sales: number;
   revenue: number;
 }
