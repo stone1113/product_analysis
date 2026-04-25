@@ -1,9 +1,7 @@
-import type { ReactNode } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Breadcrumb,
   Button,
-  Tag,
   Tabs,
   Card,
   Typography,
@@ -13,35 +11,19 @@ import {
 import {
   ArrowLeftOutlined,
   HomeOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  ClockCircleOutlined,
-  MinusCircleOutlined,
 } from '@ant-design/icons';
 import { mockProductDetail } from '../../mock/productDetail';
-import {
-  SALE_STATUS_LABEL,
-  SALE_STATUS_COLOR,
-  type SaleStatus,
-} from '../../types';
+import { SALE_STATUS_LABEL } from '../../types';
 import ProductAvatar from '../../components/ProductAvatar';
 
 import LaunchInfoTab from './components/LaunchInfoTab';
 import SalesAnalysis from './components/SalesAnalysis';
 import ReviewAnalysis from './components/ReviewAnalysis';
 import KeywordAnalysis from './components/KeywordAnalysis';
-import LifecycleAnalysis from './components/LifecycleAnalysis';
 import ProductTagAnalysis from './components/ProductTagAnalysis';
 
 const { Text, Title } = Typography;
 
-const STATUS_ICONS: Record<SaleStatus, ReactNode> = {
-  'push-success': <CheckCircleOutlined />,
-  'push-failed': <CloseCircleOutlined />,
-  pushing: <ClockCircleOutlined />,
-  pending: <ClockCircleOutlined />,
-  removed: <MinusCircleOutlined />,
-};
 
 // ── 任务信息 / 其他信息占位 ───────────────────────────────────────
 function Placeholder({ text }: { text: string }) {
@@ -114,28 +96,10 @@ export default function ProductDetail() {
             <Text type="secondary" style={{ fontSize: 12 }}>
               开品来源：<Text strong style={{ fontSize: 12 }}>{product.source}</Text>
             </Text>
-            <Tag
-              icon={STATUS_ICONS[product.saleStatus]}
-              color={SALE_STATUS_COLOR[product.saleStatus]}
-              style={{ fontSize: 12 }}
-            >
-              {SALE_STATUS_LABEL[product.saleStatus]}
-            </Tag>
-            {product.isOpsRecommended && <Tag color="purple" style={{ fontSize: 12 }}>运营推荐</Tag>}
-            {product.isFBAStock && <Tag color="blue" style={{ fontSize: 12 }}>FBA备货</Tag>}
+            <Text style={{ fontSize: 12 }}>
+              状态：<Text strong style={{ fontSize: 12 }}>{SALE_STATUS_LABEL[product.saleStatus]}</Text>
+            </Text>
           </Space>
-        </div>
-        <div style={{ display: 'flex', gap: 20, flexShrink: 0 }}>
-          {[
-            { label: '月销量', value: `${product.monthlySales.toLocaleString()} 单` },
-            { label: '采购成本', value: `¥${product.purchaseCost?.toFixed(2) ?? '--'}` },
-            { label: '评分', value: `${product.rating} / 5.0` },
-          ].map((item) => (
-            <div key={item.label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#262626' }}>{item.value}</div>
-              <div style={{ fontSize: 11, color: '#8c8c8c' }}>{item.label}</div>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -174,7 +138,12 @@ export default function ProductDetail() {
                       {
                         key: 'sales',
                         label: '销量分析',
-                        children: <SalesAnalysis salesData={product.salesData} />,
+                        children: (
+                          <SalesAnalysis
+                            salesData={product.salesData}
+                            totalReviews={product.reviewAnalysis.totalReviews}
+                          />
+                        ),
                       },
                       {
                         key: 'reviews',
@@ -183,29 +152,32 @@ export default function ProductDetail() {
                           <ReviewAnalysis
                             analysis={product.reviewAnalysis}
                             productId={product.id}
+                            analysisPeriod="last30"
+                            analysisCustomRange={null}
                           />
                         ),
                       },
                       {
                         key: 'tag-analysis',
                         label: '产品标签分析',
-                        children: <ProductTagAnalysis tags={product.tags} />,
-                      },
-                      {
-                        key: 'keywords',
-                        label: '出单关键词',
                         children: (
-                          <KeywordAnalysis
-                            keywords={product.keywords}
-                            productId={product.id}
+                          <ProductTagAnalysis
+                            product={product}
+                            analysisPeriod="last30"
+                            analysisCustomRange={null}
                           />
                         ),
                       },
                       {
-                        key: 'lifecycle',
-                        label: '生命周期',
+                        key: 'keywords',
+                        label: '关键词分析',
                         children: (
-                          <LifecycleAnalysis assessment={product.lifecycleAssessment} />
+                          <KeywordAnalysis
+                            keywords={product.keywords}
+                            productId={product.id}
+                            analysisPeriod="last30"
+                            analysisCustomRange={null}
+                          />
                         ),
                       },
                     ]}

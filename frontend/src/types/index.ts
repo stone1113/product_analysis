@@ -25,6 +25,19 @@ export const SALE_STATUS_COLOR: Record<SaleStatus, string> = {
 };
 
 // ────────────────────────────────────────────────
+// 统一分析口径
+// ────────────────────────────────────────────────
+export type AnalysisPeriod =
+  | 'last7'
+  | 'last30'
+  | 'thisMonth'
+  | 'monthBeforeLast'
+  | 'custom';
+
+/** 自定义口径：闭区间 yyyy-MM-dd，仅当 period === 'custom' 时有效 */
+export type AnalysisCustomRange = [string, string] | null;
+
+// ────────────────────────────────────────────────
 // 生命周期阶段
 // ────────────────────────────────────────────────
 export type LifecycleStage = 'introduction' | 'growth' | 'maturity' | 'decline';
@@ -114,11 +127,12 @@ export const SALES_REGION_LABEL: Record<SalesRegion, string> = {
 };
 
 export interface SalesDataPoint {
-  month: string;
+  date: string;   // "2024-01-15"
   source: SalesSource;
   region: SalesRegion;
   sales: number;
   revenue: number;
+  returnRate: number; // 0~1，退损率合计
 }
 
 // ────────────────────────────────────────────────
@@ -166,14 +180,12 @@ export interface ReviewAnalysis {
   recentReviews: ReviewItem[];
 }
 
-// ────────────────────────────────────────────────
-// 广告关键词
-// ────────────────────────────────────────────────
-export type KeywordMatchType = 'exact' | 'phrase' | 'broad';
-
 export interface Keyword {
   id: string;
+  /** 站点原文（如英文、日文搜索词） */
   keyword: string;
+  /** 母语对照（如中文），与 keyword 双语展示；接口未返回时可省略 */
+  nativeLabel?: string;
   impressions: number;
   clicks: number;
   orders: number;
@@ -182,7 +194,15 @@ export interface Keyword {
   spend: number;        // 广告花费 USD
   revenue: number;      // 广告收入 USD
   cpc: number;          // 单次点击成本
-  matchType: KeywordMatchType;
+}
+
+// ────────────────────────────────────────────────
+// 竞品
+// ────────────────────────────────────────────────
+export interface Competitor {
+  name: string;
+  price: number;
+  specs: string[];                       // 竞品具备的属性关键词
 }
 
 // ────────────────────────────────────────────────
@@ -200,21 +220,27 @@ export interface ProductTag {
 // ────────────────────────────────────────────────
 // 生命周期评估
 // ────────────────────────────────────────────────
-export type CompetitiveIntensity = 'low' | 'medium' | 'high' | 'very-high';
+/** 好评率等指标相对上一完整自然月的环比方向 */
+export type ReviewRateMomDirection = 'up' | 'down' | 'flat';
+
+/** 可由数据侧直接给出的运营趋势 */
+export interface LifecycleIndicators {
+  /** 销量按月环比变化率（%）：相对上一完整自然月，正为上升、负为下降 */
+  salesMomChangePercent: number;
+  /**
+   * 好评率（%），口径由后端约定（如 4★+5★ 占比）
+   */
+  positiveReviewRatePercent: number;
+  /** 好评率相对上一完整自然月的环比方向 */
+  positiveReviewRateMom: ReviewRateMomDirection;
+}
 
 export interface LifecycleAssessment {
   stage: LifecycleStage;
-  score: number;                         // 0-100，在曲线上的位置
-  monthlyGrowthRate: number;             // 月均增长率 %
-  marketMaturity: number;                // 市场成熟度 0-100
-  competitiveIntensity: CompetitiveIntensity;
-  indicators: {
-    salesTrend: 'rapid-growth' | 'slow-growth' | 'stable' | 'declining';
-    reviewGrowth: 'accelerating' | 'stable' | 'slowing' | 'declining';
-    priceStability: 'volatile' | 'stable' | 'compressing';
-    marketShare: 'gaining' | 'stable' | 'losing';
-  };
-  recommendations: string[];
+  /** 0–100，示意曲线打点 */
+  score: number;
+  indicators: LifecycleIndicators;
+  recommendations?: string[];
 }
 
 // ────────────────────────────────────────────────
@@ -236,5 +262,6 @@ export interface ProductDetail extends Product {
   reviewAnalysis: ReviewAnalysis;
   keywords: Keyword[];
   tags: ProductTag[];
+  competitors: Competitor[];
   lifecycleAssessment: LifecycleAssessment;
 }

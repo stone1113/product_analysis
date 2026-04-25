@@ -1,10 +1,10 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import ProductList from '../pages/ProductList';
 import ProductDetail from '../pages/ProductDetail';
 import DeepAnalysis from '../pages/DeepAnalysis';
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: '/',
     element: <MainLayout />,

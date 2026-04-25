@@ -1,68 +1,117 @@
 import type { ProductDetail, SalesSource, SalesRegion } from '../types';
 
-// ── 销售数据生成器 ────────────────────────────────────────────────
-// 按来源 × 地区的比例拆分每月总销量
-const MONTHLY_TOTALS: { month: string; sales: number; revenue: number }[] = [
-  { month: '2022-01', sales: 620,  revenue: 18598 },
-  { month: '2022-02', sales: 580,  revenue: 17398 },
-  { month: '2022-03', sales: 710,  revenue: 21298 },
-  { month: '2022-04', sales: 760,  revenue: 22798 },
-  { month: '2022-05', sales: 820,  revenue: 24598 },
-  { month: '2022-06', sales: 900,  revenue: 26998 },
-  { month: '2022-07', sales: 980,  revenue: 29398 },
-  { month: '2022-08', sales: 1050, revenue: 31498 },
-  { month: '2022-09', sales: 1100, revenue: 32998 },
-  { month: '2022-10', sales: 1250, revenue: 37498 },
-  { month: '2022-11', sales: 1480, revenue: 44398 },
-  { month: '2022-12', sales: 1620, revenue: 48598 },
-  { month: '2023-01', sales: 1050, revenue: 31498 },
-  { month: '2023-02', sales: 980,  revenue: 29398 },
-  { month: '2023-03', sales: 1100, revenue: 32998 },
-  { month: '2023-04', sales: 1200, revenue: 35988 },
-  { month: '2023-05', sales: 1450, revenue: 43486 },
-  { month: '2023-06', sales: 1680, revenue: 50383 },
-  { month: '2023-07', sales: 1920, revenue: 57581 },
-  { month: '2023-08', sales: 2100, revenue: 62979 },
-  { month: '2023-09', sales: 2350, revenue: 70476 },
-  { month: '2023-10', sales: 2580, revenue: 77394 },
-  { month: '2023-11', sales: 3100, revenue: 92969 },
-  { month: '2023-12', sales: 3600, revenue: 107964 },
-  { month: '2024-01', sales: 2800, revenue: 83972 },
-  { month: '2024-02', sales: 2950, revenue: 88481 },
-  { month: '2024-03', sales: 3200, revenue: 95960 },
-  { month: '2024-04', sales: 3380, revenue: 101388 },
-  { month: '2024-05', sales: 3550, revenue: 106488 },
-  { month: '2024-06', sales: 3720, revenue: 111588 },
-  { month: '2024-07', sales: 3900, revenue: 116988 },
-  { month: '2024-08', sales: 4100, revenue: 122988 },
-  { month: '2024-09', sales: 4350, revenue: 130488 },
-  { month: '2024-10', sales: 4600, revenue: 137988 },
-  { month: '2024-11', sales: 5200, revenue: 155988 },
-  { month: '2024-12', sales: 5800, revenue: 173988 },
+// ── 日级销售数据生成器 ────────────────────────────────────────────────
+// 每月总量基准（与原月度数据一致）
+const MONTHLY_TOTALS: { month: string; sales: number; revenue: number; returnRate: number }[] = [
+  { month: '2022-01', sales: 620,  revenue: 18598,  returnRate: 0.048 },
+  { month: '2022-02', sales: 580,  revenue: 17398,  returnRate: 0.051 },
+  { month: '2022-03', sales: 710,  revenue: 21298,  returnRate: 0.045 },
+  { month: '2022-04', sales: 760,  revenue: 22798,  returnRate: 0.042 },
+  { month: '2022-05', sales: 820,  revenue: 24598,  returnRate: 0.039 },
+  { month: '2022-06', sales: 900,  revenue: 26998,  returnRate: 0.041 },
+  { month: '2022-07', sales: 980,  revenue: 29398,  returnRate: 0.038 },
+  { month: '2022-08', sales: 1050, revenue: 31498,  returnRate: 0.036 },
+  { month: '2022-09', sales: 1100, revenue: 32998,  returnRate: 0.035 },
+  { month: '2022-10', sales: 1250, revenue: 37498,  returnRate: 0.033 },
+  { month: '2022-11', sales: 1480, revenue: 44398,  returnRate: 0.040 },
+  { month: '2022-12', sales: 1620, revenue: 48598,  returnRate: 0.044 },
+  { month: '2023-01', sales: 1050, revenue: 31498,  returnRate: 0.043 },
+  { month: '2023-02', sales: 980,  revenue: 29398,  returnRate: 0.041 },
+  { month: '2023-03', sales: 1100, revenue: 32998,  returnRate: 0.038 },
+  { month: '2023-04', sales: 1200, revenue: 35988,  returnRate: 0.036 },
+  { month: '2023-05', sales: 1450, revenue: 43486,  returnRate: 0.034 },
+  { month: '2023-06', sales: 1680, revenue: 50383,  returnRate: 0.032 },
+  { month: '2023-07', sales: 1920, revenue: 57581,  returnRate: 0.031 },
+  { month: '2023-08', sales: 2100, revenue: 62979,  returnRate: 0.030 },
+  { month: '2023-09', sales: 2350, revenue: 70476,  returnRate: 0.029 },
+  { month: '2023-10', sales: 2580, revenue: 77394,  returnRate: 0.028 },
+  { month: '2023-11', sales: 3100, revenue: 92969,  returnRate: 0.033 },
+  { month: '2023-12', sales: 3600, revenue: 107964, returnRate: 0.037 },
+  { month: '2024-01', sales: 2800, revenue: 83972,  returnRate: 0.035 },
+  { month: '2024-02', sales: 2950, revenue: 88481,  returnRate: 0.033 },
+  { month: '2024-03', sales: 3200, revenue: 95960,  returnRate: 0.031 },
+  { month: '2024-04', sales: 3380, revenue: 101388, returnRate: 0.030 },
+  { month: '2024-05', sales: 3550, revenue: 106488, returnRate: 0.028 },
+  { month: '2024-06', sales: 3720, revenue: 111588, returnRate: 0.027 },
+  { month: '2024-07', sales: 3900, revenue: 116988, returnRate: 0.026 },
+  { month: '2024-08', sales: 4100, revenue: 122988, returnRate: 0.025 },
+  { month: '2024-09', sales: 4350, revenue: 130488, returnRate: 0.024 },
+  { month: '2024-10', sales: 4600, revenue: 137988, returnRate: 0.023 },
+  { month: '2024-11', sales: 5200, revenue: 155988, returnRate: 0.028 },
+  { month: '2024-12', sales: 5800, revenue: 173988, returnRate: 0.031 },
+  { month: '2025-01', sales: 4200, revenue: 125988, returnRate: 0.034 },
+  { month: '2025-02', sales: 3900, revenue: 116988, returnRate: 0.032 },
+  { month: '2025-03', sales: 4500, revenue: 134988, returnRate: 0.030 },
+  { month: '2025-04', sales: 4800, revenue: 143988, returnRate: 0.029 },
+  { month: '2025-05', sales: 5100, revenue: 152988, returnRate: 0.027 },
+  { month: '2025-06', sales: 5400, revenue: 161988, returnRate: 0.026 },
+  { month: '2025-07', sales: 5700, revenue: 170988, returnRate: 0.025 },
+  { month: '2025-08', sales: 6000, revenue: 179988, returnRate: 0.024 },
+  { month: '2025-09', sales: 6300, revenue: 188988, returnRate: 0.023 },
+  { month: '2025-10', sales: 6600, revenue: 197988, returnRate: 0.022 },
+  { month: '2025-11', sales: 7200, revenue: 215988, returnRate: 0.026 },
+  { month: '2025-12', sales: 7800, revenue: 233988, returnRate: 0.030 },
+  { month: '2026-01', sales: 5800, revenue: 173988, returnRate: 0.032 },
+  { month: '2026-02', sales: 5500, revenue: 164988, returnRate: 0.030 },
+  { month: '2026-03', sales: 6100, revenue: 182988, returnRate: 0.028 },
+  { month: '2026-04', sales: 3200, revenue: 95988,  returnRate: 0.027 },
 ];
 
-// 来源 × 地区占比（加起来约等于 1）
 const SPLITS: { source: SalesSource; region: SalesRegion; ratio: number }[] = [
-  { source: 'amazon',      region: 'us',            ratio: 0.24 },
-  { source: 'amazon',      region: 'europe',        ratio: 0.16 },
-  { source: 'amazon',      region: 'japan',         ratio: 0.13 },
-  { source: 'amazon',      region: 'germany',       ratio: 0.08 },
-  { source: 'amazon',      region: 'uk',            ratio: 0.07 },
-  { source: 'independent', region: 'southeast_asia',ratio: 0.14 },
-  { source: 'independent', region: 'japan',         ratio: 0.08 },
-  { source: 'independent', region: 'europe',        ratio: 0.06 },
-  { source: 'independent', region: 'other',         ratio: 0.04 },
+  { source: 'amazon',      region: 'us',             ratio: 0.24 },
+  { source: 'amazon',      region: 'europe',         ratio: 0.16 },
+  { source: 'amazon',      region: 'japan',          ratio: 0.13 },
+  { source: 'amazon',      region: 'germany',        ratio: 0.08 },
+  { source: 'amazon',      region: 'uk',             ratio: 0.07 },
+  { source: 'independent', region: 'southeast_asia', ratio: 0.14 },
+  { source: 'independent', region: 'japan',          ratio: 0.08 },
+  { source: 'independent', region: 'europe',         ratio: 0.06 },
+  { source: 'independent', region: 'other',          ratio: 0.04 },
 ];
 
-const SALES_DATA = MONTHLY_TOTALS.flatMap((m) =>
-  SPLITS.map((s) => ({
-    month:   m.month,
-    source:  s.source,
-    region:  s.region,
-    sales:   Math.round(m.sales   * s.ratio),
-    revenue: Math.round(m.revenue * s.ratio),
-  })),
-);
+function daysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+// 将月度数据拆分为日级数据，每日销量带随机波动
+const SALES_DATA = MONTHLY_TOTALS.flatMap((m) => {
+  const [y, mo] = m.month.split('-').map(Number);
+  const days = daysInMonth(y, mo);
+  // 生成权重（周末稍高）
+  const weights = Array.from({ length: days }, (_, i) => {
+    const dow = new Date(y, mo - 1, i + 1).getDay();
+    return dow === 0 || dow === 6 ? 1.3 : 1.0;
+  });
+  const weightSum = weights.reduce((a, b) => a + b, 0);
+
+  return SPLITS.flatMap((s) => {
+    const monthSales   = Math.round(m.sales   * s.ratio);
+    const monthRevenue = Math.round(m.revenue * s.ratio);
+    // 每月退损率在基准上加小随机扰动（来源/地区略有差异）
+    const baseReturn = m.returnRate + (s.source === 'independent' ? 0.005 : 0);
+
+    return Array.from({ length: days }, (_, i) => {
+      const day     = i + 1;
+      const dateStr = `${y}-${String(mo).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const w       = weights[i] / weightSum;
+      // 给销量加小随机抖动（±15%），使日级图表更真实
+      const jitter  = 0.85 + Math.abs(Math.sin(y * 31 + mo * 7 + day * 3 + s.ratio * 100)) * 0.30;
+      const daySales   = Math.max(0, Math.round(monthSales   * w * days * jitter));
+      const dayRevenue = Math.max(0, Math.round(monthRevenue * w * days * jitter));
+      const dayReturn  = Math.max(0, Math.min(0.15,
+        baseReturn + (Math.sin(day * 0.7 + mo) * 0.008),
+      ));
+      return {
+        date:       dateStr,
+        source:     s.source,
+        region:     s.region,
+        sales:      daySales,
+        revenue:    dayRevenue,
+        returnRate: Math.round(dayReturn * 10000) / 10000,
+      };
+    });
+  });
+});
 
 export const mockProductDetail: ProductDetail = {
   // ── ERP 管理字段 ──────────────────────────────
@@ -219,6 +268,7 @@ export const mockProductDetail: ProductDetail = {
     {
       id: 'KW001',
       keyword: 'bluetooth earbuds',
+      nativeLabel: '蓝牙耳塞',
       impressions: 125000,
       clicks: 3750,
       orders: 890,
@@ -227,11 +277,11 @@ export const mockProductDetail: ProductDetail = {
       spend: 2812,
       revenue: 15207,
       cpc: 0.75,
-      matchType: 'broad',
     },
     {
       id: 'KW002',
       keyword: 'wireless earphones',
+      nativeLabel: '无线耳机',
       impressions: 89000,
       clicks: 2670,
       orders: 623,
@@ -240,11 +290,11 @@ export const mockProductDetail: ProductDetail = {
       spend: 2270,
       revenue: 10712,
       cpc: 0.85,
-      matchType: 'phrase',
     },
     {
       id: 'KW003',
       keyword: 'noise cancelling earbuds',
+      nativeLabel: '降噪耳塞',
       impressions: 67000,
       clicks: 2010,
       orders: 445,
@@ -253,11 +303,11 @@ export const mockProductDetail: ProductDetail = {
       spend: 3326,
       revenue: 13408,
       cpc: 1.65,
-      matchType: 'exact',
     },
     {
       id: 'KW004',
       keyword: 'true wireless earbuds',
+      nativeLabel: '真无线耳塞',
       impressions: 45000,
       clicks: 1350,
       orders: 298,
@@ -266,11 +316,11 @@ export const mockProductDetail: ProductDetail = {
       spend: 1755,
       revenue: 8951,
       cpc: 1.30,
-      matchType: 'phrase',
     },
     {
       id: 'KW005',
       keyword: 'earbuds for iphone',
+      nativeLabel: '适用于 iPhone 的耳塞',
       impressions: 38000,
       clicks: 1140,
       orders: 241,
@@ -279,11 +329,11 @@ export const mockProductDetail: ProductDetail = {
       spend: 1596,
       revenue: 7156,
       cpc: 1.40,
-      matchType: 'broad',
     },
     {
       id: 'KW006',
       keyword: 'sport earbuds',
+      nativeLabel: '运动耳塞',
       impressions: 29000,
       clicks: 870,
       orders: 178,
@@ -292,11 +342,11 @@ export const mockProductDetail: ProductDetail = {
       spend: 1392,
       revenue: 5337,
       cpc: 1.60,
-      matchType: 'broad',
     },
     {
       id: 'KW007',
       keyword: 'budget wireless earbuds',
+      nativeLabel: '平价无线耳塞',
       impressions: 22000,
       clicks: 660,
       orders: 143,
@@ -305,11 +355,11 @@ export const mockProductDetail: ProductDetail = {
       spend: 726,
       revenue: 4079,
       cpc: 1.10,
-      matchType: 'phrase',
     },
     {
       id: 'KW008',
       keyword: 'earbuds with microphone',
+      nativeLabel: '带麦克风耳塞',
       impressions: 19000,
       clicks: 570,
       orders: 118,
@@ -318,7 +368,6 @@ export const mockProductDetail: ProductDetail = {
       spend: 826,
       revenue: 3539,
       cpc: 1.45,
-      matchType: 'exact',
     },
   ],
 
@@ -351,26 +400,34 @@ export const mockProductDetail: ProductDetail = {
     { id: 'T021', text: 'Q4旺季品', category: 'custom' },
   ],
 
+  // ── 竞品参照 ──────────────────────────────────
+  competitors: [
+    {
+      name: 'Anker Q45',
+      price: 55.99,
+      specs: ['主动降噪', '60H续航', '蓝牙5.3', '折叠设计', '多设备连接'],
+    },
+    {
+      name: 'JLab Go Air',
+      price: 24.88,
+      specs: ['IPX5防水', '32H续航', '蓝牙5.3', '多设备连接'],
+    },
+    {
+      name: 'EarFun Air Pro',
+      price: 49.99,
+      specs: ['主动降噪', 'IPX5防水', '6麦降噪通话', '蓝牙5.3', '快充', '多设备连接'],
+    },
+  ],
+
   // ── 生命周期评估 ─────────────────────────────
   lifecycleAssessment: {
     stage: 'growth',
     score: 38,
-    monthlyGrowthRate: 12.4,
-    marketMaturity: 45,
-    competitiveIntensity: 'high',
     indicators: {
-      salesTrend: 'rapid-growth',
-      reviewGrowth: 'accelerating',
-      priceStability: 'stable',
-      marketShare: 'gaining',
+      salesMomChangePercent: 11.5,
+      positiveReviewRatePercent: 82,
+      positiveReviewRateMom: 'up',
     },
-    recommendations: [
-      '加大广告投入，把握成长期流量红利，抢占搜索排名',
-      '积极引导买家留评，目标月均新增评论 200+ 条',
-      '关注核心竞争对手动态，保持价格竞争力',
-      '扩充变体（颜色 / 捆绑包），提升产品矩阵覆盖',
-      '提前规划旺季库存，Q4 高峰期不断货',
-      '针对负评痛点（充电盒做工）推进下一版本改款',
-    ],
+    recommendations: [],
   },
 };

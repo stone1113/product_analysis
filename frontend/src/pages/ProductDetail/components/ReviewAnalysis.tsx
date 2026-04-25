@@ -27,13 +27,16 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import type { ReviewAnalysis as ReviewAnalysisType } from '../../../types';
+import type { AnalysisPeriod, AnalysisCustomRange, ReviewAnalysis as ReviewAnalysisType } from '../../../types';
+import { getAnalysisPeriodLabel } from '../../../utils/analysisPeriod';
 
 const { Title, Text, Paragraph } = Typography;
 
 interface Props {
   analysis: ReviewAnalysisType;
   productId: string;
+  analysisPeriod: AnalysisPeriod;
+  analysisCustomRange: AnalysisCustomRange;
 }
 
 // 蓝色梯度：1星最浅 → 5星最深
@@ -41,7 +44,7 @@ const RATING_COLORS = ['#bae0ff', '#91caff', '#69b1ff', '#4096ff', '#1677ff'];
 const C_PRIMARY = '#1677ff';
 const C_BG      = '#f0f5ff';
 
-export default function ReviewAnalysis({ analysis, productId }: Props) {
+export default function ReviewAnalysis({ analysis, productId, analysisPeriod, analysisCustomRange }: Props) {
   const navigate = useNavigate();
 
   const pieData = analysis.ratingDistribution.map((d) => ({
@@ -52,6 +55,9 @@ export default function ReviewAnalysis({ analysis, productId }: Props) {
 
   return (
     <div>
+      <Text type="secondary" style={{ display: 'block', marginBottom: 12, fontSize: 12 }}>
+        当前口径：{getAnalysisPeriodLabel(analysisPeriod, analysisCustomRange)}。评论评分、VOC 标签和近期评论按该口径分析。
+      </Text>
       <Row gutter={[20, 20]}>
         {/* 左：总体评分 + 分布 */}
         <Col span={10}>

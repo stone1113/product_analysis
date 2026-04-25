@@ -26,7 +26,8 @@ import {
   Tooltip,
 } from 'recharts';
 import type { ColumnsType } from 'antd/es/table';
-import type { Keyword, KeywordMatchType } from '../../../types';
+import type { AnalysisPeriod, AnalysisCustomRange, Keyword } from '../../../types';
+import { getAnalysisPeriodLabel } from '../../../utils/analysisPeriod';
 
 const { Title, Text } = Typography;
 
@@ -35,24 +36,14 @@ const C_LIGHT    = '#4096ff';
 const C_LIGHTER  = '#69b1ff';
 const C_BG       = '#f0f5ff';
 
-const MATCH_TYPE_COLOR: Record<KeywordMatchType, string> = {
-  exact: 'blue',
-  phrase: 'geekblue',
-  broad: 'cyan',
-};
-
-const MATCH_TYPE_LABEL: Record<KeywordMatchType, string> = {
-  exact: '精准',
-  phrase: '词组',
-  broad: '广泛',
-};
-
 interface Props {
   keywords: Keyword[];
   productId: string;
+  analysisPeriod: AnalysisPeriod;
+  analysisCustomRange: AnalysisCustomRange;
 }
 
-export default function KeywordAnalysis({ keywords, productId }: Props) {
+export default function KeywordAnalysis({ keywords, productId, analysisPeriod, analysisCustomRange }: Props) {
   const navigate = useNavigate();
 
   const totalSpend = keywords.reduce((s, k) => s + k.spend, 0);
@@ -60,26 +51,36 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
   const totalOrders = keywords.reduce((s, k) => s + k.orders, 0);
   const avgAcos = keywords.reduce((s, k) => s + k.acos, 0) / keywords.length;
 
-  // Top 6 by orders for bar chart
+  // Top 6 by orders for bar chart（Y 轴截断原文；悬停可看全文 + 母语）
   const topKeywords = [...keywords]
     .sort((a, b) => b.orders - a.orders)
     .slice(0, 6)
-    .map((k) => ({ name: k.keyword.length > 18 ? k.keyword.slice(0, 18) + '…' : k.keyword, orders: k.orders }));
+    .map((k) => {
+      const name = k.keyword.length > 18 ? `${k.keyword.slice(0, 18)}…` : k.keyword;
+      return {
+        name,
+        fullKeyword: k.keyword,
+        nativeLabel: k.nativeLabel,
+        orders: k.orders,
+      };
+    });
 
   const columns: ColumnsType<Keyword> = [
     {
       title: '关键词',
-      dataIndex: 'keyword',
       key: 'keyword',
-      render: (val: string, record) => (
+      render: (_: unknown, r: Keyword) => (
         <div>
           <Text strong style={{ fontSize: 13 }}>
-            {val}
+            {r.keyword}
           </Text>
-          <br />
-          <Tag color={MATCH_TYPE_COLOR[record.matchType]} style={{ fontSize: 11, marginTop: 2 }}>
-            {MATCH_TYPE_LABEL[record.matchType]}匹配
-          </Tag>
+          {r.nativeLabel ? (
+            <div>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {r.nativeLabel}
+              </Text>
+            </div>
+          ) : null}
         </div>
       ),
     },
@@ -151,18 +152,6 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
       align: 'right',
     },
     {
-      title: '广告收入',
-      dataIndex: 'revenue',
-      key: 'revenue',
-      sorter: (a, b) => a.revenue - b.revenue,
-      render: (v: number) => (
-        <Text strong style={{ color: C_PRIMARY }}>
-          ${v.toLocaleString()}
-        </Text>
-      ),
-      align: 'right',
-    },
-    {
       title: 'CPC',
       dataIndex: 'cpc',
       key: 'cpc',
@@ -173,6 +162,9 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
 
   return (
     <div>
+      <Text type="secondary" style={{ display: 'block', marginBottom: 12, fontSize: 12 }}>
+        当前口径：{getAnalysisPeriodLabel(analysisPeriod, analysisCustomRange)}。关键词指标用于复盘该周期内的曝光、点击、出单与投产表现。
+      </Text>
       {/* 汇总 */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
@@ -218,7 +210,7 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
         </Col>
       </Row>
 
-      {/* Top 出单关键词柱图 */}
+      {/* Top 关键词出单量柱图 */}
       <Card
         title={<Title level={5} style={{ margin: 0 }}>Top 关键词出单量</Title>}
         bordered={false}
@@ -251,7 +243,41 @@ export default function KeywordAnalysis({ keywords, productId }: Props) {
               width={140}
               tick={{ fontSize: 11 }}
             />
-            <Tooltip formatter={(v: number) => [`${v.toLocaleString()} 单`, '出单量']} />
+            <Tooltip
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const p = payload[0].payload as {
+                  fullKeyword: string;
+                  nativeLabel?: string;
+                  orders: number;
+                };
+                return (
+                  <div
+                    style={{
+                      background: '#fff',
+                      border: '1px solid #f0f0f0',
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    }}
+                  >
+                    <div>
+                      <Text strong>{p.fullKeyword}</Text>
+                    </div>
+                    {p.nativeLabel ? (
+                      <div>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {p.nativeLabel}
+                        </Text>
+                      </div>
+                    ) : null}
+                    <div style={{ marginTop: 4 }}>
+                      出单量：<Text strong>{p.orders.toLocaleString()}</Text> 单
+                    </div>
+                  </div>
+                );
+              }}
+            />
             <Bar dataKey="orders" fill="#1677ff" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>

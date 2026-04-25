@@ -18,10 +18,6 @@ import {
   SearchOutlined,
   EyeOutlined,
   PlusOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  ClockCircleOutlined,
-  MinusCircleOutlined,
   FilterOutlined,
   CloseOutlined,
   ThunderboltOutlined,
@@ -30,12 +26,12 @@ import {
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import type { InputRef } from 'antd/es/input';
 import { mockProducts } from '../../mock/products';
 import {
   type Product,
   type SaleStatus,
   SALE_STATUS_LABEL,
-  SALE_STATUS_COLOR,
 } from '../../types';
 import ProductAvatar from '../../components/ProductAvatar';
 import {
@@ -79,13 +75,6 @@ const STATUS_OPTIONS = (
   value: s,
 }));
 
-const STATUS_ICONS: Record<SaleStatus, React.ReactNode> = {
-  'push-success': <CheckCircleOutlined />,
-  'push-failed': <CloseCircleOutlined />,
-  pushing: <ClockCircleOutlined />,
-  pending: <ClockCircleOutlined />,
-  removed: <MinusCircleOutlined />,
-};
 
 // ── 布尔字段展示 ─────────────────────────────────
 function BoolCell({ value }: { value: boolean }) {
@@ -117,7 +106,7 @@ function NLSearchBar({
   totalCount,
 }: NLSearchBarProps) {
   const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<InputRef>(null);
 
   const handleSearch = (value: string) => {
     const trimmed = value.trim();
@@ -158,7 +147,7 @@ function NLSearchBar({
       {/* 搜索框 */}
       <div style={{ display: 'flex', gap: 8 }}>
         <Input
-          ref={inputRef as React.RefObject<HTMLInputElement>}
+          ref={inputRef}
           value={inputValue}
           size="large"
           placeholder='例如：11月12月热销的核心运营品、台湾平台1688来源在售产品...'
@@ -484,26 +473,6 @@ export default function ProductList() {
       ),
     },
     {
-      title: '销售标签',
-      dataIndex: 'salesTags',
-      key: 'salesTags',
-      width: 140,
-      render: (tags?: string[]) =>
-        tags && tags.length > 0 ? (
-          <Space size={[4, 4]} wrap>
-            {tags.map((t) => (
-              <Tag key={t} style={{ fontSize: 11, margin: 0 }}>
-                {t}
-              </Tag>
-            ))}
-          </Space>
-        ) : (
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            -
-          </Text>
-        ),
-    },
-    {
       title: '采购成本(¥)',
       dataIndex: 'purchaseCost',
       key: 'purchaseCost',
@@ -633,34 +602,16 @@ export default function ProductList() {
       title: '在售状态',
       dataIndex: 'saleStatus',
       key: 'saleStatus',
-      width: 105,
+      width: 90,
       render: (val: SaleStatus) => (
-        <Tag icon={STATUS_ICONS[val]} color={SALE_STATUS_COLOR[val]} style={{ fontSize: 11 }}>
-          {SALE_STATUS_LABEL[val]}
-        </Tag>
+        <Text style={{ fontSize: 12 }}>{SALE_STATUS_LABEL[val]}</Text>
       ),
-    },
-    {
-      title: 'FBA备货品',
-      dataIndex: 'isFBAStock',
-      key: 'isFBAStock',
-      width: 88,
-      align: 'center',
-      render: (val: boolean) => <BoolCell value={val} />,
     },
     {
       title: '是否为老品标识',
       dataIndex: 'isOldProduct',
       key: 'isOldProduct',
       width: 110,
-      align: 'center',
-      render: (val: boolean) => <BoolCell value={val} />,
-    },
-    {
-      title: '是否运营推荐品',
-      dataIndex: 'isOpsRecommended',
-      key: 'isOpsRecommended',
-      width: 115,
       align: 'center',
       render: (val: boolean) => <BoolCell value={val} />,
     },
